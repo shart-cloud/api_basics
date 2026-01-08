@@ -635,45 +635,313 @@ Before jumping into building providers from scratch with HashiCups, let's get ha
 3. **Connect concepts** - See how your curl commands translate to Terraform resources
 4. **Practice workflow** - Learn terraform init, plan, apply, destroy with a familiar API
 
-### Quick Start
+### Prerequisites
 
-The `terraform-provider-apibasics` directory contains a complete Terraform provider. Let's use it!
+Before building the provider, ensure you have the required tools installed:
 
-**Step 1: Navigate to the provider directory**
+```bash
+# Check Go version (1.21+ required)
+go version
+# Expected: go version go1.21.x or higher
+
+# Check Terraform version (1.0+ required)
+terraform version
+# Expected: Terraform v1.x.x
+
+# If Go is not installed, install it:
+# Linux: sudo apt install golang-go
+# macOS: brew install go
+# Windows: Download from https://go.dev/dl/
+```
+
+### Step 1: Register an Account on API Basics
+
+First, you need an account on the API Basics service. If you completed the course, you already have one. If not:
+
+```bash
+curl -X POST https://api-basics.sharted.workers.dev/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "your-email@example.com",
+    "password": "YourSecurePassword123",
+    "name": "Your Name"
+  }'
+```
+
+**Expected response:**
+```json
+{
+  "id": "uuid-here",
+  "email": "your-email@example.com",
+  "name": "Your Name",
+  "access_token": "eyJhbG...",
+  "refresh_token": "eyJhbG..."
+}
+```
+
+### Step 2: Test Your Credentials
+
+Verify your credentials work by getting a token:
+
+```bash
+curl -X POST https://api-basics.sharted.workers.dev/token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "your-email@example.com",
+    "password": "YourSecurePassword123"
+  }'
+```
+
+**Expected response:**
+```json
+{
+  "access_token": "eyJhbG...",
+  "refresh_token": "eyJhbG...",
+  "token_type": "Bearer",
+  "expires_in": 3600
+}
+```
+
+Save the access token to test API access:
+```bash
+export ACCESS_TOKEN="<paste-your-access-token-here>"
+
+# Test that you can access the API
+curl https://api-basics.sharted.workers.dev/todos \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
+```
+
+### Step 3: Navigate to the Provider Directory
+
 ```bash
 cd terraform-provider-apibasics
 ```
 
-**Step 2: Build the provider**
+### Step 4: Download Dependencies and Build
+
 ```bash
+# Download Go module dependencies
 go mod download
+
+# Build the provider binary
 go build -o terraform-provider-apibasics
+
+# Verify the build succeeded
+ls -la terraform-provider-apibasics
+# Should show the executable file
 ```
 
-**Step 3: Install locally**
+**Troubleshooting build issues:**
 ```bash
-# Create local provider directory (adjust path for your OS)
-mkdir -p ~/.terraform.d/plugins/api-basics/apibasics/1.0.0/linux_amd64/
-cp terraform-provider-apibasics ~/.terraform.d/plugins/api-basics/apibasics/1.0.0/linux_amd64/
+# If you get module errors, try:
+go mod tidy
+go build -o terraform-provider-apibasics
 
-# For macOS (Intel): darwin_amd64
-# For macOS (Apple Silicon): darwin_arm64
-# For Windows: windows_amd64
+# If you get permission errors on the output:
+chmod +x terraform-provider-apibasics
 ```
 
-**Step 4: Set your credentials**
+### Step 5: Install the Provider Locally
+
+Terraform needs to find the provider in a specific location. Install it based on your operating system:
+
 ```bash
+# Determine your OS and architecture automatically
+OS=$(go env GOOS)
+ARCH=$(go env GOARCH)
+
+# Create the local provider directory
+mkdir -p ~/.terraform.d/plugins/api-basics/apibasics/1.0.0/${OS}_${ARCH}/
+
+# Copy the provider binary
+cp terraform-provider-apibasics ~/.terraform.d/plugins/api-basics/apibasics/1.0.0/${OS}_${ARCH}/
+
+# Verify installation
+ls -la ~/.terraform.d/plugins/api-basics/apibasics/1.0.0/${OS}_${ARCH}/
+```
+
+**Platform-specific paths:**
+
+| Platform | Path |
+|----------|------|
+| Linux (AMD64) | `~/.terraform.d/plugins/api-basics/apibasics/1.0.0/linux_amd64/` |
+| Linux (ARM64) | `~/.terraform.d/plugins/api-basics/apibasics/1.0.0/linux_arm64/` |
+| macOS (Intel) | `~/.terraform.d/plugins/api-basics/apibasics/1.0.0/darwin_amd64/` |
+| macOS (Apple Silicon) | `~/.terraform.d/plugins/api-basics/apibasics/1.0.0/darwin_arm64/` |
+| Windows | `%APPDATA%\terraform.d\plugins\api-basics\apibasics\1.0.0\windows_amd64\` |
+
+### Step 6: Configure Authentication
+
+The provider reads credentials from environment variables. Set them in your terminal:
+
+```bash
+# Set your API Basics credentials
 export APIBASICS_EMAIL="your-email@example.com"
-export APIBASICS_PASSWORD="your-password"
+export APIBASICS_PASSWORD="YourSecurePassword123"
+
+# Optional: Set a custom endpoint (defaults to production API)
+# export APIBASICS_ENDPOINT="https://api-basics.sharted.workers.dev"
+
+# Verify the variables are set
+echo "Email: $APIBASICS_EMAIL"
+echo "Password is set: $([ -n "$APIBASICS_PASSWORD" ] && echo 'yes' || echo 'no')"
 ```
 
-**Step 5: Try the examples**
+**For persistent configuration**, add these to your shell profile:
 ```bash
+# Add to ~/.bashrc, ~/.zshrc, or equivalent
+echo 'export APIBASICS_EMAIL="your-email@example.com"' >> ~/.bashrc
+echo 'export APIBASICS_PASSWORD="YourSecurePassword123"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### Step 7: Initialize and Run Examples
+
+```bash
+# Navigate to the examples directory
 cd examples
+
+# Initialize Terraform (loads the provider)
 terraform init
+
+# Preview what Terraform will do
 terraform plan
+
+# Apply the configuration (creates resources via API)
+terraform apply
+# Type 'yes' when prompted
+
+# View the created resources
+terraform show
+```
+
+### Step 8: Verify with curl
+
+Confirm Terraform created the todo by checking the API directly:
+
+```bash
+# Get a fresh token
+export ACCESS_TOKEN=$(curl -s -X POST https://api-basics.sharted.workers.dev/token \
+  -H "Content-Type: application/json" \
+  -d "{\"email\":\"$APIBASICS_EMAIL\",\"password\":\"$APIBASICS_PASSWORD\"}" | \
+  grep -o '"access_token":"[^"]*' | cut -d'"' -f4)
+
+# List your todos - you should see the one Terraform created
+curl -s https://api-basics.sharted.workers.dev/todos \
+  -H "Authorization: Bearer $ACCESS_TOKEN" | jq
+```
+
+### Step 9: Update a Resource
+
+Modify the Terraform configuration to see an update in action:
+
+```bash
+# Edit examples/main.tf - change completed from false to true
+# Or change the title
+
+# Preview the changes
+terraform plan
+# Shows: completed: false → true
+
+# Apply the update (sends PUT request to API)
 terraform apply
 ```
+
+### Step 10: Destroy Resources
+
+Clean up by destroying the resources:
+
+```bash
+# Destroy all resources managed by Terraform
+terraform destroy
+# Type 'yes' when prompted
+
+# Verify with curl - the todo should be gone
+curl -s https://api-basics.sharted.workers.dev/todos \
+  -H "Authorization: Bearer $ACCESS_TOKEN" | jq
+```
+
+### Understanding the Authentication Flow
+
+When you run `terraform apply`, here's what happens internally:
+
+```
+terraform init
+    ↓
+Load provider binary from ~/.terraform.d/plugins/
+    ↓
+terraform apply
+    ↓
+Provider Configure() called
+    ↓
+POST /token with APIBASICS_EMAIL and APIBASICS_PASSWORD
+    ↓
+Receive: {"access_token": "eyJhbG...", "refresh_token": "..."}
+    ↓
+Store tokens in provider client
+    ↓
+For each resource operation:
+    └─→ Add "Authorization: Bearer <access_token>" header
+    └─→ Make API request (POST, GET, PUT, DELETE)
+    └─→ On 401 error: Use refresh_token to get new access_token
+```
+
+### Troubleshooting
+
+**Provider not found:**
+```bash
+# Error: Failed to query available provider packages
+
+# Verify the provider is installed
+ls -la ~/.terraform.d/plugins/api-basics/apibasics/1.0.0/
+
+# Ensure it matches your OS/architecture
+go env GOOS GOARCH
+
+# Remove cached terraform files and reinitialize
+rm -rf .terraform .terraform.lock.hcl
+terraform init
+```
+
+**Authentication errors:**
+```bash
+# Error: Unable to Authenticate with API
+
+# Test your credentials directly
+curl -X POST https://api-basics.sharted.workers.dev/token \
+  -H "Content-Type: application/json" \
+  -d "{\"email\":\"$APIBASICS_EMAIL\",\"password\":\"$APIBASICS_PASSWORD\"}"
+
+# Check environment variables are set correctly
+echo "Email: $APIBASICS_EMAIL"
+echo "Password length: ${#APIBASICS_PASSWORD}"
+```
+
+**Build errors:**
+```bash
+# Error: go: command not found
+# Install Go: https://go.dev/dl/
+
+# Error: module not found
+go mod tidy
+go mod download
+
+# Error: permission denied
+chmod +x terraform-provider-apibasics
+```
+
+### What You Just Accomplished
+
+By completing these steps, you've:
+
+✅ **Registered/verified API credentials** - Confirmed authentication works
+✅ **Built a provider from source** - Compiled Go code to a binary
+✅ **Installed locally** - Placed provider where Terraform can find it
+✅ **Configured authentication** - Set environment variables for credentials
+✅ **Used the provider** - Created, read, updated, and destroyed resources
+✅ **Verified with curl** - Confirmed API state matches Terraform state
+
+This is the exact workflow for developing any Terraform provider!
 
 ### What Just Happened?
 
