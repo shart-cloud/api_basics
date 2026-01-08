@@ -1,7 +1,28 @@
 {
   "name": "API Basics + Terraform Provider Dev",
-  "build": {
-    "dockerfile": "Dockerfile"
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    },
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "1.21"
+    },
+    "ghcr.io/devcontainers/features/terraform:1": {
+      "version": "1.7",
+      "installTFsec": false,
+      "installTerraformDocs": false
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": false,
+      "username": "vscode",
+      "userUid": "1000",
+      "userGid": "1000"
+    }
   },
 
   "customizations": {
@@ -41,22 +62,9 @@
     }
   },
 
-  "features": {
-    "ghcr.io/devcontainers/features/common-utils:2": {
-      "installZsh": false,
-      "username": "vscode",
-      "userUid": "1000",
-      "userGid": "1000"
-    },
-    "ghcr.io/devcontainers/features/git:1": {
-      "version": "latest"
-    }
-  },
-
   "containerEnv": {
     "GO111MODULE": "on",
-    "GOPATH": "/go",
-    "PATH": "/go/bin:/usr/local/go/bin:${containerEnv:PATH}"
+    "TF_PLUGIN_CACHE_DIR": "/home/vscode/.terraform.d/plugin-cache"
   },
 
   "forwardPorts": [8787],
@@ -71,8 +79,6 @@
       "onAutoForward": "notify"
     }
   },
-
-  "workspaceFolder": "/workspace",
 
   "remoteUser": "vscode",
 

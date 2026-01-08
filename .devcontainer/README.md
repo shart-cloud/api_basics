@@ -76,24 +76,26 @@ The container automatically installs:
 ## What Happens During Setup
 
 ### Build Phase (First Time Only)
-1. Downloads Node.js 20 base image
-2. Installs system packages (git, curl, etc.)
-3. Downloads and installs Go 1.21.6
-4. Downloads and installs Terraform 1.7.0
-5. Installs Go development tools
-6. Creates non-root user (vscode)
-7. Installs Wrangler globally
+1. Downloads Ubuntu base image
+2. Installs devcontainer features:
+   - Node.js 20
+   - Go 1.21
+   - Terraform 1.7
+   - Git and common utilities
+3. Creates non-root user (vscode)
 
-**Time:** ~5-10 minutes (first time only)
+**Time:** ~2-3 minutes (first time only) - Much faster than building from scratch!
 
 ### Post-Create Phase (Every Rebuild)
-1. Runs `npm install` to install Node.js dependencies
-2. Downloads Go modules for the Terraform provider
-3. Creates Terraform plugin directory
-4. Creates `.env.example` template
-5. Sets up git configuration
+1. Installs Cloudflare Wrangler globally
+2. Installs Go development tools (gopls, delve, staticcheck) in background
+3. Runs `npm install` to install Node.js dependencies
+4. Downloads Go modules for the Terraform provider
+5. Creates Terraform plugin directories
+6. Creates `.env.example` template
+7. Sets up git configuration
 
-**Time:** ~1-2 minutes
+**Time:** ~2-3 minutes
 
 ### Post-Start Phase (Every Container Start)
 1. Fixes file permissions if needed
@@ -212,25 +214,30 @@ Edit `.devcontainer/devcontainer.json`:
 
 ### Installing Additional Tools
 
-Edit `.devcontainer/Dockerfile` and add to the RUN commands:
-
-```dockerfile
-RUN apt-get install -y your-package
-```
-
-Or add to `.devcontainer/post-create.sh`:
+Add to `.devcontainer/post-create.sh`:
 
 ```bash
 npm install -g your-tool
+# or
+go install your-package@latest
 ```
 
 ### Changing Go or Terraform Versions
 
-Edit the ARG lines in `.devcontainer/Dockerfile`:
+Edit the feature versions in `.devcontainer/devcontainer.json`:
 
-```dockerfile
-ARG GO_VERSION=1.21.6       # Change this
-ARG TERRAFORM_VERSION=1.7.0 # Change this
+```json
+"features": {
+  "ghcr.io/devcontainers/features/node:1": {
+    "version": "20"  // Change Node version
+  },
+  "ghcr.io/devcontainers/features/go:1": {
+    "version": "1.21"  // Change Go version
+  },
+  "ghcr.io/devcontainers/features/terraform:1": {
+    "version": "1.7"  // Change Terraform version
+  }
+}
 ```
 
 Then rebuild: F1 → "Dev Containers: Rebuild Container"
@@ -323,10 +330,10 @@ F1 → "Dev Containers: Reopen in Container"
 
 ### Rebuild Container
 F1 → "Dev Containers: Rebuild Container"
-- Rebuilds image from Dockerfile
+- Rebuilds image using devcontainer features
 - Runs post-create and post-start scripts
-- Slow (5-10 minutes first time)
-- Use when: Dockerfile or devcontainer.json changes
+- Faster than custom Dockerfile (2-3 minutes first time)
+- Use when: devcontainer.json feature versions change
 
 ### Reopen Locally
 F1 → "Dev Containers: Reopen Folder Locally"
@@ -388,10 +395,10 @@ A: Yes! Your code is mounted from the host filesystem.
 A: Yes, but you'll need Go and Terraform installed locally. The integrated terminal in VS Code runs inside the container.
 
 **Q: How much disk space does this use?**
-A: Initial image: ~2GB. With dependencies: ~3-4GB.
+A: Initial image: ~1.5GB. With dependencies: ~2-3GB.
 
 **Q: Can I customize the container?**
-A: Yes! Edit the Dockerfile and devcontainer.json.
+A: Yes! Edit devcontainer.json to add features or extensions, and post-create.sh for additional tools.
 
 **Q: Is this the same as a virtual machine?**
 A: No, containers are more lightweight than VMs.
