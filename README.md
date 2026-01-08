@@ -23,12 +23,31 @@ A complete REST API built with Cloudflare Workers, HonoJS, and D1 database for t
 
 ## Getting Started
 
-### Prerequisites
+### Option 1: Dev Container (Recommended for Students)
 
+The easiest way to get started! No need to install Node.js, Go, or Terraform locally.
+
+**Prerequisites:**
+- Docker Desktop
+- VS Code with Dev Containers extension
+
+**Quick Start:**
+1. Open this folder in VS Code
+2. Click "Reopen in Container" when prompted
+3. Wait for setup (~5-10 minutes first time)
+4. Run `npm run dev`
+
+See [DEV_CONTAINER_QUICKSTART.md](./DEV_CONTAINER_QUICKSTART.md) for details.
+
+### Option 2: Local Installation
+
+**Prerequisites:**
 - Node.js 18+
 - npm or yarn
+- (Optional) Go 1.21+ for Terraform provider development
+- (Optional) Terraform 1.7+ for testing providers
 
-### Installation
+**Installation:**
 
 ```bash
 # Install dependencies

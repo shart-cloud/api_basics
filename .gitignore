@@ -37,9 +37,13 @@ Thumbs.db
 
 # IDE
 .vscode/
+!.vscode/settings.json.example
 .idea/
 *.sublime-project
 *.sublime-workspace
+
+# Dev Container (keep configuration, ignore runtime data)
+!.devcontainer/
 
 # Logs
 logs/
@@ -48,3 +52,15 @@ logs/
 # Temporary files
 tmp/
 temp/
+
+# Terraform Provider
+terraform-provider-apibasics/terraform-provider-apibasics
+terraform-provider-apibasics/dist/
+terraform-provider-apibasics/.terraform/
+terraform-provider-apibasics/.terraform.lock.hcl
+terraform-provider-apibasics/examples/.terraform/
+terraform-provider-apibasics/examples/.terraform.lock.hcl
+terraform-provider-apibasics/examples/terraform.tfstate
+terraform-provider-apibasics/examples/terraform.tfstate.backup
+terraform-provider-apibasics/examples/*.tfvars
+!terraform-provider-apibasics/examples/*.tfvars.example

@@ -4,15 +4,17 @@ set -e
 echo "🔧 Running post-create setup..."
 
 # Install Node.js dependencies
-echo "📦 Installing Node.js dependencies..."
-npm install
+if [ -f "package.json" ]; then
+    echo "📦 Installing Node.js dependencies..."
+    npm install || echo "⚠️  npm install failed (this is okay if package.json is missing)"
+fi
 
 # Setup Go modules for the Terraform provider
 if [ -d "terraform-provider-apibasics" ]; then
     echo "🔨 Setting up Terraform provider..."
     cd terraform-provider-apibasics
-    go mod download
-    go mod tidy
+    go mod download || echo "⚠️  go mod download failed"
+    go mod tidy || echo "⚠️  go mod tidy failed"
     cd ..
 fi
 
@@ -20,9 +22,9 @@ fi
 echo "📁 Creating Terraform plugin directory..."
 mkdir -p ~/.terraform.d/plugins
 
-# Setup git hooks if .git exists
+# Setup git
 if [ -d ".git" ]; then
-    echo "🪝 Setting up git hooks..."
+    echo "🪝 Setting up git..."
     git config --global --add safe.directory /workspace
 fi
 
@@ -42,6 +44,7 @@ JWT_REFRESH_EXPIRY=2592000
 EOF
 fi
 
+echo ""
 echo "✅ Post-create setup complete!"
 echo ""
 echo "Next steps:"

@@ -4,34 +4,17 @@
     "dockerfile": "Dockerfile"
   },
 
-  // Configure tool-specific properties
   "customizations": {
     "vscode": {
-      // VS Code extensions for the dev container
       "extensions": [
-        // Go development
         "golang.go",
-
-        // Terraform
         "hashicorp.terraform",
-
-        // REST API testing
         "humao.rest-client",
-
-        // JSON formatting
         "esbenp.prettier-vscode",
-
-        // Markdown preview
         "yzhang.markdown-all-in-one",
-
-        // Git
         "eamodio.gitlens",
-
-        // Docker
         "ms-azuretools.vscode-docker"
       ],
-
-      // VS Code settings
       "settings": {
         "go.toolsManagement.autoUpdate": true,
         "go.useLanguageServer": true,
@@ -58,11 +41,9 @@
     }
   },
 
-  // Features to add to the dev container
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {
-      "installZsh": true,
-      "configureZshAsDefaultShell": false,
+      "installZsh": false,
       "username": "vscode",
       "userUid": "1000",
       "userGid": "1000"
@@ -72,25 +53,18 @@
     }
   },
 
-  // Set environment variables
   "containerEnv": {
     "GO111MODULE": "on",
     "GOPATH": "/go",
-    "PATH": "/go/bin:/usr/local/go/bin:${localEnv:PATH}"
+    "PATH": "/go/bin:/usr/local/go/bin:${containerEnv:PATH}"
   },
 
-  // Forward ports for the API and any future services
-  "forwardPorts": [
-    8787  // Cloudflare Workers dev server
-  ],
+  "forwardPorts": [8787],
 
-  // Post create command - install Go tools and dependencies
   "postCreateCommand": "bash .devcontainer/post-create.sh",
 
-  // Keep container running after creation
   "postStartCommand": "bash .devcontainer/post-start.sh",
 
-  // Use 'forwardPorts' to make a list of ports inside the container available locally
   "portsAttributes": {
     "8787": {
       "label": "API Basics Dev Server",
@@ -98,25 +72,12 @@
     }
   },
 
-  // Mount the workspace
   "workspaceFolder": "/workspace",
-  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
 
-  // Run as non-root user
   "remoteUser": "vscode",
 
-  // Uncomment to connect as root instead
-  // "remoteUser": "root",
-
-  // Mounts for preserving data between rebuilds
   "mounts": [
-    // Preserve bash history
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.bash_history,target=/home/vscode/.bash_history,type=bind,consistency=cached",
-
-    // Preserve Go module cache
     "source=api-basics-gomodcache,target=/go/pkg/mod,type=volume",
-
-    // Preserve Terraform plugin cache
     "source=api-basics-terraform,target=/home/vscode/.terraform.d,type=volume"
   ]
 }
