@@ -1,0 +1,34 @@
+{
+  "name": "api-basics",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 execute api-basics-db --local --file=./drizzle/0000_outgoing_green_goblin.sql",
+    "db:migrate": "wrangler d1 execute api-basics-db --file=./drizzle/0000_outgoing_green_goblin.sql"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "better-auth": "^1.4.10",
+    "drizzle-kit": "^0.31.8",
+    "hono": "^4.11.3",
+    "wrangler": "^4.58.0"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20260108.0",
+    "bcryptjs": "^3.0.3",
+    "better-auth-cloudflare": "^0.2.9",
+    "drizzle-orm": "^0.45.1",
+    "isomorphic-dompurify": "^2.35.0",
+    "jsonwebtoken": "^9.0.3",
+    "kysely": "^0.28.9",
+    "kysely-d1": "^0.4.0"
+  }
+}
